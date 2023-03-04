@@ -4,7 +4,7 @@
 # script sorting gopro photos and videos by date and separating them
 
 import os, argparse, sys
-import shutil
+import shutil, filecmp
 import time, datetime
 
 # (gopro specific)
@@ -22,7 +22,7 @@ class NextImage(Exception):
     pass
 continue_i = NextImage()
 
-
+ 
 folder_size = os.path.getsize(args.source)
 copied_counter = 0
 skipped_counter = 0
@@ -38,10 +38,10 @@ for element in os.listdir(args.source):
                 date = time.gmtime(os.path.getmtime(args.source + element + DATA_PATH + file))
                 
                 if f"{date.tm_year}" not in os.listdir(args.photos):
-                    os.mkdir(args.photos + date.tm_year)
+                    os.mkdir(args.photos + str(date.tm_year))
 
                 while f"{date.tm_year}_{date.tm_mon:02d}_{date.tm_mday:02d}_({date_counter}).JPG" in os.listdir(f"{args.photos}{date.tm_year}/"):
-                    if os.path.getmtime(args.source + element + DATA_PATH + file) == os.path.getmtime(f"{args.photos}{date.tm_year}/{date.tm_year}_{date.tm_mon:02d}_{date.tm_mday:02d}_({date_counter}).JPG"):
+                    if filecmp.cmp(args.source + element + DATA_PATH + file, f"{args.photos}{date.tm_year}/{date.tm_year}_{date.tm_mon:02d}_{date.tm_mday:02d}_({date_counter}).JPG"):
                         raise continue_i
                     date_counter += 1
 
@@ -51,9 +51,9 @@ for element in os.listdir(args.source):
                 date = time.gmtime(os.path.getmtime(args.source + element + DATA_PATH + file))
                 
                 if f"{date.tm_year}" not in os.listdir(args.videos):
-                    os.mkdir(args.videos + date.tm_year)
+                    os.mkdir(args.videos + str(date.tm_year))
                 while f"{date.tm_year}_{date.tm_mon:02d}_{date.tm_mday:02d}_({date_counter}).MP4" in os.listdir(f"{args.videos}{date.tm_year}/"):
-                    if os.path.getmtime(args.source + element + DATA_PATH + file) == os.path.getmtime(f"{args.photos}{date.tm_year}/{date.tm_year}_{date.tm_mon:02d}_{date.tm_mday:02d}_({date_counter}).MP4"):
+                    if filecmp.cmp(args.source + element + DATA_PATH + file, f"{args.videos}{date.tm_year}/{date.tm_year}_{date.tm_mon:02d}_{date.tm_mday:02d}_({date_counter}).MP4"):
                         raise continue_i
                     date_counter += 1
                 shutil.copy(args.source + element + DATA_PATH + file, f"{args.videos}{date.tm_year}/{date.tm_year}_{date.tm_mon:02d}_{date.tm_mday:02d}_({date_counter}).MP4")
